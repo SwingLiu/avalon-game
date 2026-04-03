@@ -87,7 +87,7 @@
     
     async function createRoom() {
       const name = document.getElementById('player-name').value;
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/create-room', {
+      const resp = await fetch('/api/create-room', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({playerName: name})
       });
@@ -98,7 +98,7 @@
     async function joinRoom() {
       if (!ROOM_ID) return;
       const name = document.getElementById('join-name').value;
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/join-room', {
+      const resp = await fetch('/api/join-room', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, playerName: name})
       });
@@ -108,7 +108,7 @@
     }
     
     async function startGame() {
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/game-action', {
+      const resp = await fetch('/api/game-action', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, action: 'start'})
       });
@@ -117,7 +117,7 @@
     }
     
     async function nextStep() {
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/next-step', {
+      const resp = await fetch('/api/next-step', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID})
       });
@@ -127,7 +127,7 @@
     
     async function submitTeam() {
       const selected = [...document.querySelectorAll('.player.selected')].map(el => el.textContent);
-      await fetch('https://avalon.1226626206cc.workers.dev/api/submit-team', {
+      await fetch('/api/submit-team', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, team: selected})
       });
@@ -135,7 +135,7 @@
     
     async function submitVote(vote) {
       const name = document.getElementById('player-name')?.value || document.getElementById('join-name')?.value || 'Player';
-      await fetch('https://avalon.1226626206cc.workers.dev/api/submit-vote', {
+      await fetch('/api/submit-vote', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, playerName: name, vote})
       });
@@ -187,7 +187,7 @@
     
     async function poll() {
       if (!ROOM_ID) return;
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/room-status?roomId=' + ROOM_ID);
+      const resp = await fetch('/api/room-status?roomId=' + ROOM_ID);
       const data = await resp.json();
       if (data.error) return;
       
@@ -197,3 +197,19 @@
           '<span class="player' + (p.isHost ? ' host' : '') + (p.isAI && !p.isHost ? ' ai' : '') + '">' + 
           (p.isHost ? '🤖 ' : p.isAI ? '🤖 ' : '👤 ') + p.name + '</span>'
         ).join('');
+      } else {
+        updateGame(data);
+      }
+    }
+    
+    function startPolling() {
+      poll();
+      POLL_INTERVAL = setInterval(poll, 3000);
+    }
+    
+    if (ROOM_ID) {
+      document.getElementById('join-screen').classList.remove('hidden');
+      document.getElementById('player-name').value = '玩家' + Math.floor(Math.random() * 100);
+    }
+  </script>
+</body>
