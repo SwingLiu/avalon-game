@@ -1,217 +1,161 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>阿瓦隆 - AI主持人版</title>
+  <title>阿瓦隆 - 单机版</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e8e6e3; min-height: 100vh; }
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
     h1 { text-align: center; color: #c9a227; margin-bottom: 16px; }
     .card { background: #12121a; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(201,162,39,0.3); }
-    .btn { background: #c9a227; color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; width: 100%; }
+    .btn { background: #c9a227; color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-size: 15px; cursor: pointer; width: 100%; font-weight: 600; }
     .btn:hover { background: #e8c547; }
-    .btn:disabled { background: #444; cursor: not-allowed; }
-    .btn-outline { background: transparent; border: 1px solid #c9a227; color: #c9a227; }
-    .btn-green { background: #22c55e; }
-    .btn-red { background: #ef4444; color: #fff; }
     input { background: #1a1a25; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-size: 15px; width: 100%; margin-bottom: 12px; }
     .player-list { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-    .player { background: #1a1a25; padding: 8px 14px; border-radius: 20px; border: 1px solid #333; font-size: 14px; }
-    .player.host { border-color: #f59e0b; }
-    .player.ai { border-color: rgba(59,130,248,0.5); }
-    .player.ready { border-color: #22c55e; }
-    .host-msg { background: #1a1a25; border-left: 3px solid #f59e0b; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px; white-space: pre-wrap; line-height: 1.6; }
-    .role { display: inline-block; background: linear-gradient(135deg, #c9a227, #8b6914); color: #000; padding: 6px 14px; border-radius: 6px; font-weight: 600; margin: 4px; }
-    .role.good { background: linear-gradient(135deg, #22c55e, #16a34a); }
-    .role.evil { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; }
+    .player { background: #1a1a25; padding: 8px 14px; border-radius: 20px; border: 1px solid #333; }
+    .role { display: inline-block; background: #c9a227; color: #000; padding: 6px 14px; border-radius: 6px; margin: 4px; font-weight: 600; }
+    .role.evil { background: #dc2626; color: #fff; }
     .hidden { display: none; }
-    .vote-btns { display: flex; gap: 12px; margin-top: 12px; }
-    .vote-btns .btn { flex: 1; }
-    .round-info { text-align: center; color: #888; margin-bottom: 12px; }
-    .team { background: #1a1a25; padding: 12px; border-radius: 8px; margin: 12px 0; }
-    .team-member { display: inline-block; background: #c9a227; color: #000; padding: 4px 10px; border-radius: 4px; margin: 4px; font-size: 14px; }
-    #room-url { background: #1a1a25; color: #c9a227; padding: 10px; border-radius: 8px; word-break: break-all; font-size: 13px; }
+    .host-msg { background: #1a1a25; border-left: 3px solid #f59e0b; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🏰 阿瓦隆 - AI主机版</h1>
-    <p style="text-align:center;color:#666;font-size:13px;margin-bottom:16px">3人 + 2AI + AI主持人</p>
+    <h1>🏰 阿瓦隆 - 单机版</h1>
+    <p style="text-align:center;color:#888;font-size:13px;margin-bottom:16px">同一台电脑，轮流来玩</p>
     
-    <div id="create-screen" class="card">
+    <div id="setup-screen" class="card">
       <input type="text" id="player-name" placeholder="你的名字" value="玩家" />
-      <button class="btn" onclick="createRoom()">创建房间</button>
+      <button class="btn" onclick="createGame()">创建游戏</button>
     </div>
     
-    <div id="join-screen" class="card hidden">
-      <input type="text" id="join-name" placeholder="你的名字" />
-      <button class="btn" onclick="joinRoom()">加入</button>
-    </div>
-    
-    <div id="lobby-screen" class="card hidden">
-      <div id="room-url" style="margin-bottom:12px"></div>
-      <div class="player-list" id="player-list"></div>
-      <p style="color:#666;font-size:13px;margin:12px 0">分享链接给朋友，然后开始游戏</p>
-      <button class="btn btn-green" onclick="startGame()">🎮 开始游戏</button>
-    </div>
-    
-    <div id="game-screen" class="hidden">
-      <div class="host-msg" id="host-message">🏰 欢迎来到阿瓦隆！</div>
-      <div class="round-info" id="round-info">第 <span id="round-num">1</span> 轮</div>
-      <div class="player-list" id="game-players"></div>
-      <div id="role-area" class="hidden" style="margin:16px 0">
+    <div id="game-screen" class="card hidden">
+      <div class="host-msg" id="message">游戏进行中...</div>
+      <div class="player-list" id="players"></div>
+      <div id="role-area" class="hidden">
         <p style="color:#888;margin-bottom:8px">你的角色：</p>
         <div id="my-role"></div>
       </div>
-      <div id="team-area" class="hidden">
-        <p style="color:#c9a227;margin-bottom:8px">👑 选择队伍成员：</p>
-        <div class="player-list" id="selectable-players"></div>
-        <button class="btn" onclick="submitTeam()" style="margin-top:12px">确认队伍</button>
-      </div>
-      <div id="vote-area" class="hidden">
-        <p style="color:#c9a227;margin-bottom:8px">🗳️ 投票：</p>
-        <div class="vote-btns">
-          <button class="btn btn-green" onclick="submitVote('approve')">✓ 同意</button>
-          <button class="btn btn-red" onclick="submitVote('reject')">✗ 反对</button>
-        </div>
-      </div>
-      <button class="btn btn-outline" id="next-btn" onclick="nextStep()" style="margin-top:16px">下一步 ➡️</button>
+      <button class="btn" onclick="nextPhase()" style="margin-top:16px">下一步 ➡️</button>
+      <button class="btn" onclick="resetGame()" style="margin-top:8px;background:#444;color:#fff">重置游戏</button>
     </div>
   </div>
 
   <script>
-    const ROOM_ID = new URLSearchParams(window.location.search).get('room') || '';
-    let POLL_INTERVAL = null;
-    let myRole = null;
+    // Game state
+    let gameState = JSON.parse(localStorage.getItem('avalon') || 'null');
+    const roles = ['Merlin', 'Percival', 'Loyal Servant', 'Loyal Servant', 'Minon'];
+    const evilRoles = ['Assassin', 'Mordred'];
+    let phase = 0;
     
-    async function createRoom() {
-      const name = document.getElementById('player-name').value;
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/create-room', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({playerName: name})
-      });
-      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
-      if (data.success) window.location.href = '?room=' + data.roomId;
+    function save() {
+      localStorage.setItem('avalon', JSON.stringify(gameState));
     }
     
-    async function joinRoom() {
-      if (!ROOM_ID) return;
-      const name = document.getElementById('join-name').value;
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/join-room', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({roomId: ROOM_ID, playerName: name})
-      });
-      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
-      if (data.error) alert(data.error);
-      else showLobby();
+    function createGame() {
+      const name = document.getElementById('player-name').value || '玩家';
+      gameState = {
+        players: [{name, role: null}],
+        phase: 'setup',
+        round: 1,
+        leader: 0,
+        message: '等待玩家加入...\n\n请轮流输入名字并点击"添加玩家"'
+      };
+      save();
+      showGame();
     }
     
-    async function startGame() {
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/game-action', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({roomId: ROOM_ID, action: 'start'})
-      });
-      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
-      if (data.success) showGame();
+    function addPlayer() {
+      const name = prompt('输入玩家名字:');
+      if (!name) return;
+      gameState.players.push({name, role: null});
+      if (gameState.players.length === 5) {
+        gameState.message = '已满5人！点击"发牌"开始';
+      }
+      save();
+      render();
     }
     
-    async function nextStep() {
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/next-step', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({roomId: ROOM_ID})
+    function dealCards() {
+      // Simple random role assignment
+      const allRoles = [...roles];
+      gameState.players.forEach((p, i) => {
+        const idx = Math.floor(Math.random() * allRoles.length);
+        p.role = allRoles.splice(idx, 1)[0];
       });
-      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
-      if (data.success) updateGame(data);
+      gameState.phase = 'roles';
+      gameState.message = '🔔 所有人查看角色！\n\n好人找梅林，坏人找莫德雷德\n\n点击"下一步"继续';
+      save();
+      render();
     }
     
-    async function submitTeam() {
-      const selected = [...document.querySelectorAll('.player.selected')].map(el => el.textContent);
-      await fetch('https://avalon.1226626206cc.workers.dev/api/submit-team', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({roomId: ROOM_ID, team: selected})
-      });
-    }
-    
-    async function submitVote(vote) {
-      const name = document.getElementById('player-name')?.value || document.getElementById('join-name')?.value || 'Player';
-      await fetch('https://avalon.1226626206cc.workers.dev/api/submit-vote', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({roomId: ROOM_ID, playerName: name, vote})
-      });
-      document.getElementById('vote-area').classList.add('hidden');
-    }
-    
-    function showLobby() {
-      document.getElementById('create-screen').classList.add('hidden');
-      document.getElementById('join-screen').classList.add('hidden');
-      document.getElementById('lobby-screen').classList.remove('hidden');
-      document.getElementById('room-url').textContent = window.location.href;
-      startPolling();
+    function nextPhase() {
+      if (gameState.phase === 'setup') {
+        if (gameState.players.length < 3) {
+          alert('需要至少3个玩家！');
+          return;
+        }
+        // Fill with AI
+        while (gameState.players.length < 5) {
+          gameState.players.push({name: 'AI' + (gameState.players.length), role: 'AI', isAI: true});
+        }
+        dealCards();
+      } else if (gameState.phase === 'roles') {
+        gameState.phase = 'teambuild';
+        gameState.message = '👑 第1轮\n\n队伍领袖选择4人执行任务\n(单机版跳过队伍选择，直接任务)';
+        gameState.round = 1;
+      } else if (gameState.phase === 'teambuild') {
+        // Simple voting - random pass/fail
+        const fail = Math.random() < 0.3;
+        gameState.message = fail ? '❌ 任务失败！' : '✅ 任务成功！';
+        if (gameState.round >= 3 || fail) {
+          gameState.message += '\n\n🏆 游戏结束！';
+        } else {
+          gameState.round++;
+        }
+      }
+      save();
+      render();
     }
     
     function showGame() {
-      document.getElementById('lobby-screen').classList.add('hidden');
+      document.getElementById('setup-screen').classList.add('hidden');
       document.getElementById('game-screen').classList.remove('hidden');
-      startPolling();
+      render();
     }
     
-    function updateGame(data) {
-      document.getElementById('host-message').textContent = data.hostMessage || '...';
-      document.getElementById('round-num').textContent = data.currentRound || 1;
-      
-      // Show/hide areas based on phase
-      document.getElementById('team-area').classList.toggle('hidden', data.gamePhase !== 'teambuild');
-      document.getElementById('vote-area').classList.toggle('hidden', data.gamePhase !== 'vote');
-      document.getElementById('next-btn').classList.toggle('hidden', data.gamePhase === 'quest');
-      
-      renderPlayers(data);
-    }
-    
-    function renderPlayers(data) {
-      const list = document.getElementById('game-players');
-      list.innerHTML = data.players.map(p => 
-        '<span class="player' + (p.isHost ? ' host' : '') + (p.isAI && !p.isHost ? ' ai' : '') + '">' + 
-        (p.isHost ? '🤖 ' : p.isAI ? '🤖 ' : '👤 ') + p.name + '</span>'
+    function render() {
+      document.getElementById('message').textContent = gameState.message;
+      document.getElementById('players').innerHTML = gameState.players.map(p => 
+        '<span class="player">' + p.name + '</span>'
       ).join('');
       
-      // Show role if revealed
-      const me = data.players.find(p => !p.isAI && !p.isHost && p.role);
-      if (me?.role && myRole !== me.role) {
-        myRole = me.role;
-        const isGood = ['Merlin','Percival','Loyal Servant'].includes(me.role);
-        document.getElementById('role-area').classList.remove('hidden');
-        document.getElementById('my-role').innerHTML = '<span class="role' + (isGood ? ' good' : ' evil') + '">' + me.role + '</span>';
+      // Show roles if revealed
+      if (gameState.phase === 'roles') {
+        const mainPlayer = gameState.players[0]; // First player is you
+        if (mainPlayer.role) {
+          document.getElementById('role-area').classList.remove('hidden');
+          const isEvil = ['Minon', 'Mordred', 'Assassin'].includes(mainPlayer.role);
+          document.getElementById('my-role').innerHTML = 
+            '<span class="role' + (isEvil ? ' evil' : '') + '">' + mainPlayer.role + '</span>';
+        }
       }
     }
     
-    async function poll() {
-      if (!ROOM_ID) return;
-      const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/room-status?roomId=' + ROOM_ID);
-      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
-      if (data.error) return;
-      
-      if (data.gameState === 'waiting') {
-        const list = document.getElementById('player-list');
-        list.innerHTML = data.players.map(p => 
-          '<span class="player' + (p.isHost ? ' host' : '') + (p.isAI && !p.isHost ? ' ai' : '') + '">' + 
-          (p.isHost ? '🤖 ' : p.isAI ? '🤖 ' : '👤 ') + p.name + '</span>'
-        ).join('');
-      } else {
-        updateGame(data);
-      }
+    function resetGame() {
+      localStorage.removeItem('avalon');
+      gameState = null;
+      document.getElementById('setup-screen').classList.remove('hidden');
+      document.getElementById('game-screen').classList.add('hidden');
     }
     
-    function startPolling() {
-      poll();
-      POLL_INTERVAL = setInterval(poll, 3000);
-    }
-    
-    if (ROOM_ID) {
-      document.getElementById('join-screen').classList.remove('hidden');
-      document.getElementById('player-name').value = '玩家' + Math.floor(Math.random() * 100);
+    // Add player button if game exists
+    if (gameState && gameState.phase === 'setup') {
+      // Add button dynamically
     }
   </script>
+  <button class="btn" onclick="addPlayer()" style="margin-top:12px">添加玩家 +</button>
 </body>
-</html>
 </html>
