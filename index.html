@@ -91,8 +91,8 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({playerName: name})
       });
-      const data = await resp.json();
-      if (data.success) window.location.href = '?room=' + data.roomId;
+      const data = await resp.json().catch(e => ({error: e.message}));
+      alert('Connected!'); if (data.success) window.location.href = '?room=' + data.roomId;
     }
     
     async function joinRoom() {
@@ -102,7 +102,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, playerName: name})
       });
-      const data = await resp.json();
+      const data = await resp.json().catch(e => ({error: e.message}));
       if (data.error) alert(data.error);
       else showLobby();
     }
@@ -112,7 +112,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, action: 'start'})
       });
-      const data = await resp.json();
+      const data = await resp.json().catch(e => ({error: e.message}));
       if (data.success) showGame();
     }
     
@@ -121,7 +121,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID})
       });
-      const data = await resp.json();
+      const data = await resp.json().catch(e => ({error: e.message}));
       if (data.success) updateGame(data);
     }
     
@@ -188,7 +188,7 @@
     async function poll() {
       if (!ROOM_ID) return;
       const resp = await fetch('/api/room-status?roomId=' + ROOM_ID);
-      const data = await resp.json();
+      const data = await resp.json().catch(e => ({error: e.message}));
       if (data.error) return;
       
       if (data.gameState === 'waiting') {
