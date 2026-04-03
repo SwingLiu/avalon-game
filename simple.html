@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>阿瓦隆</title>
+<style>
+body{background:#0a0a0f;color:#e8e6e3;font-family:sans-serif;padding:20px;text-align:center}
+h1{color:#c9a227}
+input{background:#1a1a25;border:1px solid #444;color:#fff;padding:10px;border-radius:5px;width:200px}
+button{background:#c9a227;color:#000;border:none;padding:12px 24px;border-radius:8px;margin:5px;cursor:pointer;font-size:16px}
+#p{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0;justify-content:center}
+.p{background:#222;padding:8px 16px;border-radius:20px}
+</style>
+</head>
+<body>
+<h1>🏰 阿瓦隆</h1>
+<input id=n placeholder="你的名字"><br>
+<button onclick="add()">加入游戏</button>
+<button onclick="start()" id=st disabled>开始游戏</button>
+<div id=p></div>
+<div id=r></div>
+<script>
+var p=[];
+function add(){
+  var name=document.getElementById('n').value;
+  if(!name)return alert('请输入名字');
+  p.push(name);
+  document.getElementById('p').innerHTML+='<span class=p>'+name+'</span>';
+  document.getElementById('n').value='';
+  document.getElementById('st').disabled=p.length<3;
+}
+function start(){
+  var roles=['梅林','帕西瓦尔','忠实','忠实','爪牙'];
+  p.forEach((name,i)=>{
+    var role=roles.splice(Math.floor(Math.random()*roles.length),1)[0];
+    document.getElementById('r').innerHTML='<p>'+name+' 的角色是: <b style="color:#c9a227">'+role+'</b></p>';
+  });
+  alert('游戏开始！查看你的角色。\n\n好人任务：找出梅林\n坏人任务：阻止好人');
+}
+</script>
+</body>
+</html>
