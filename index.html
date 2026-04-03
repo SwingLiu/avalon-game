@@ -91,7 +91,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({playerName: name})
       });
-      const data = await resp.json();
+      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
       if (data.success) window.location.href = '?room=' + data.roomId;
     }
     
@@ -102,7 +102,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, playerName: name})
       });
-      const data = await resp.json();
+      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
       if (data.error) alert(data.error);
       else showLobby();
     }
@@ -112,7 +112,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID, action: 'start'})
       });
-      const data = await resp.json();
+      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
       if (data.success) showGame();
     }
     
@@ -121,7 +121,7 @@
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({roomId: ROOM_ID})
       });
-      const data = await resp.json();
+      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
       if (data.success) updateGame(data);
     }
     
@@ -188,7 +188,7 @@
     async function poll() {
       if (!ROOM_ID) return;
       const resp = await fetch('https://avalon.1226626206cc.workers.dev/api/room-status?roomId=' + ROOM_ID);
-      const data = await resp.json();
+      console.log('Response:', resp); const data = await resp.json(); console.log('Data:', data);
       if (data.error) return;
       
       if (data.gameState === 'waiting') {
